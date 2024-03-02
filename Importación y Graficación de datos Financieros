@@ -1,0 +1,158 @@
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#
+#                  Importación y gráficos de datos financieros usando Quantmod
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Código Diseñado por: Santiago Puentes Núñez
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+# Limpieza de entorno
+rm(list=ls())
+dev.off()
+
+#______________________________________________________________________________________________#
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#### 0. Instalación de Paquetes ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+pacman::p_load(quantmod)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#### 1. Importación usando Quantmod ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+mdate = "2023-01-15"
+
+
+PFB = getSymbols("PFBCOLOM.CL",         # Acción o Activo 
+                 from = mdate,          # Fecha de descarga
+                 src = "yahoo",         # Fuente de información
+                 auto.assign = F,       # Valor lógico que autoasigna datos
+                 periodicity = "daily"  # Periodicidad de importación
+                 )
+
+
+head(PFB) # Veamos que PFB contiene 5 series en un solo objeto
+
+# Además, podemos observar por el "Warning Message" que la base de dato contiene
+# valores faltantes, por lo que algunas funciones con funcionaran correctamente.
+
+# Para ello, usamos na.omit() para deshacernos de los valores nulos.
+
+PFB = na.omit(PFB)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#### 2. Análisis de los datos ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~# 
+
+# Debemos de tener en cuenta que estos datos son series de tiempo. 
+
+# Fijamos la serie con los datos del cierre
+PFB_cierre = PFB$PFBCOLOM.CL.Close
+
+# Un breve resumen estadístico
+summary(PFB_cierre)
+
+summary(PFB)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#### 2.1. Graficas series ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+#~~ Gráfico con función plot() ~~#
+
+plot(PFB_cierre, main = "Preferencial Bancolombia")
+
+# Podemos hacer distintos tipos de gráficos con distintos tipos
+
+plot(PFB_cierre,
+     main = "Preferencias Bancolombia",
+     type = "s",
+     col = "purple3"
+     )
+
+#~~ Gráfico con función chartSeries() ~~#
+
+# Obtenemos una gráfica más "Cool"
+chartSeries(PFB_cierre, 
+            type = "auto", 
+            name = "Preferencial Bancolombia",
+            theme = chartTheme("black", up.col = "gray"),
+            TA = NULL
+            )
+
+# Con fondo blanco y sin las grillas de fondo
+chartSeries(PFB_cierre, 
+            type = "auto", 
+            name = "Preferencial Bancolombia",
+            theme = chartTheme("white", up.col = "blue"),
+            show.grid = F,
+            TA = NULL
+            )
+
+# ChartSeries nos permite gráficar los gráficos de velas (Usamos Subset para 
+# poder apreciar mejor las velas)
+chartSeries(PFB, 
+            type = "auto",
+            name = "Preferencial Bancolombia",
+            subset = "2023-12-12/2024-02-25",
+            theme = chartTheme('black',up.col='lightgreen',dn.col='coral2'),
+            time.scale = F,
+            yrange = F,
+            )
+
+# Si queremos graficar sin el valumnen, añadimos "TA = NULL"
+chartSeries(PFB, 
+            type = "auto",
+            name = "Preferencial Bancolombia",
+            subset = "2023-12-12/2024-02-25",
+            theme = chartTheme('black',up.col='lightgreen',dn.col='coral2'),
+            time.scale = F,
+            TA = NULL,
+            )
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#### 3. Cáculo de los retornos ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+# Los retornos nos indican en términos porcentuales cuanto hemos ganado de la 
+# serie
+
+# Retorno simple neto 
+ret_PFB = diff(PFB_cierre)/PFB_cierre
+summary(ret_PFB)
+head(ret_PFB)
+
+# Retorno logaritmico neto
+logret_PFB = diff(log(PFB_cierre))
+summary(logret_PFB)
+head(logret_PFB)
+
+
+#~~ Graficamente ~~# 
+
+plot(logret_PFB)
+plot(ret_PFB)
+
+# Tengamos más clase...
+
+chartSeries(ret_PFB,
+            name = "Retornos Preferencial Bancolombia",
+            subset = "2023-06-12/2024-03-01",
+            show.grid = F,
+            theme = chartTheme("white", up.col="royalblue"),
+            TA = NULL
+            )
+
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+#                                         FIN DEL CÓDIGO 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
